@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { Plus, X } from "lucide-react";
 import { saveProfile } from "./actions";
+import { Card, SectionLabel, buttonClasses, inputClasses } from "@/components/ui";
 import type { GradeEntry, Profile, UcasStatus } from "@/lib/supabase/types";
 
 const UCAS_STATUS_OPTIONS: { value: UcasStatus; label: string }[] = [
@@ -11,6 +13,11 @@ const UCAS_STATUS_OPTIONS: { value: UcasStatus; label: string }[] = [
   { value: "self_releasing", label: "Self-releasing (changed my mind)" },
   { value: "waiting", label: "Waiting to hear back" },
 ];
+
+const REMOVE_BUTTON_CLASSES =
+  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-red-300 hover:text-red-600 dark:hover:border-red-900 dark:hover:text-red-400";
+const ADD_LINK_CLASSES =
+  "inline-flex items-center gap-1 self-start text-sm font-medium text-accent hover:text-accent-hover";
 
 interface UniversityOption {
   id: string;
@@ -80,7 +87,7 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-10">
+    <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="grades_json" value={JSON.stringify(grades)} readOnly />
       <input
         type="hidden"
@@ -95,8 +102,8 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
         readOnly
       />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Your grades</h2>
+      <Card className="flex flex-col gap-3">
+        <SectionLabel>Your grades</SectionLabel>
         <div className="flex flex-col gap-2">
           {grades.map((grade, index) => (
             <div key={index} className="flex gap-2">
@@ -104,21 +111,21 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
                 placeholder="Subject"
                 value={grade.subject}
                 onChange={(e) => updateGrade(index, "subject", e.target.value)}
-                className="h-11 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50"
+                className={`flex-1 ${inputClasses}`}
               />
               <input
                 placeholder="Grade"
                 value={grade.grade}
                 onChange={(e) => updateGrade(index, "grade", e.target.value)}
-                className="h-11 w-24 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50"
+                className={`w-24 ${inputClasses}`}
               />
               <button
                 type="button"
                 onClick={() => removeGrade(index)}
                 aria-label="Remove grade"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                className={REMOVE_BUTTON_CLASSES}
               >
-                &times;
+                <X className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -126,32 +133,30 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
         <button
           type="button"
           onClick={() => setGrades((prev) => [...prev, { subject: "", grade: "" }])}
-          className="self-start text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
+          className={ADD_LINK_CLASSES}
         >
-          + Add grade
+          <Plus className="h-3.5 w-3.5" /> Add grade
         </button>
-      </section>
+      </Card>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Top 3 target universities
-        </h2>
+      <Card className="flex flex-col gap-3">
+        <SectionLabel>Top 3 target universities</SectionLabel>
 
         {topUniversityIds.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {topUniversityIds.map((id) => (
               <li
                 key={id}
-                className="flex items-center gap-2 rounded-full bg-zinc-900 py-1.5 pl-3 pr-2 text-sm text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
+                className="flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3 pr-2 text-sm text-accent-foreground"
               >
                 {universityById.get(id) ?? id}
                 <button
                   type="button"
                   onClick={() => removeUniversity(id)}
                   aria-label={`Remove ${universityById.get(id) ?? "university"}`}
-                  className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-white/20"
+                  className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/20"
                 >
-                  &times;
+                  <X className="h-3 w-3" />
                 </button>
               </li>
             ))}
@@ -164,19 +169,19 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
               placeholder="Search universities…"
               value={uniQuery}
               onChange={(e) => setUniQuery(e.target.value)}
-              className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50"
+              className={inputClasses}
             />
             {(uniQuery.trim().length > 0 || filteredUniversities.length > 0) && (
-              <ul className="mt-1 flex flex-col overflow-hidden rounded-lg border border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+              <ul className="mt-1 flex flex-col overflow-hidden rounded-lg border border-border bg-surface">
                 {filteredUniversities.length === 0 && (
-                  <li className="px-3 py-2 text-sm text-zinc-500">No matches</li>
+                  <li className="px-3 py-2 text-sm text-muted">No matches</li>
                 )}
                 {filteredUniversities.map((u) => (
                   <li key={u.id}>
                     <button
                       type="button"
                       onClick={() => addUniversity(u.id)}
-                      className="w-full px-3 py-2 text-left text-sm text-zinc-900 hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-surface-muted"
                     >
                       {u.name}
                     </button>
@@ -186,12 +191,10 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
             )}
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Backup courses you&apos;d be flexible on
-        </h2>
+      <Card className="flex flex-col gap-3">
+        <SectionLabel>Backup courses you&apos;d be flexible on</SectionLabel>
         <div className="flex flex-col gap-2">
           {backupCourses.map((course, index) => (
             <div key={index} className="flex gap-2">
@@ -199,15 +202,15 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
                 placeholder="e.g. Biology at a different uni"
                 value={course}
                 onChange={(e) => updateBackupCourse(index, e.target.value)}
-                className="h-11 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50"
+                className={`flex-1 ${inputClasses}`}
               />
               <button
                 type="button"
                 onClick={() => removeBackupCourse(index)}
                 aria-label="Remove backup course"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                className={REMOVE_BUTTON_CLASSES}
               >
-                &times;
+                <X className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -216,23 +219,23 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
           <button
             type="button"
             onClick={() => setBackupCourses((prev) => [...prev, ""])}
-            className="self-start text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
+            className={ADD_LINK_CLASSES}
           >
-            + Add backup course
+            <Plus className="h-3.5 w-3.5" /> Add backup course
           </button>
         )}
-      </section>
+      </Card>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">UCAS status</h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-500">
+      <Card className="flex flex-col gap-3">
+        <SectionLabel>UCAS status</SectionLabel>
+        <p className="text-xs text-muted">
           Informational only — this never restricts what you can browse or do here.
         </p>
         <select
           name="ucas_status"
           value={ucasStatus}
           onChange={(e) => setUcasStatus(e.target.value as UcasStatus)}
-          className="h-11 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50"
+          className={inputClasses}
         >
           {UCAS_STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -240,7 +243,7 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
             </option>
           ))}
         </select>
-      </section>
+      </Card>
 
       {state?.error && (
         <p className="text-sm text-red-600 dark:text-red-400" role="alert">
@@ -253,11 +256,7 @@ export default function ProfileForm({ universities, initialProfile }: ProfileFor
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-12 w-full items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-medium text-zinc-50 transition-colors hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
-      >
+      <button type="submit" disabled={pending} className={buttonClasses("primary", "w-full")}>
         {pending ? "Saving…" : "Save profile"}
       </button>
     </form>

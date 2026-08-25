@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ArrowRight, Info, Phone } from "lucide-react";
 import { rankCourses, type CourseWithUniversity, type MatchResult } from "@/lib/matching";
 import { toTelHref } from "@/lib/tel";
+import { Badge, Card, linkClasses } from "@/components/ui";
 import type { Profile, University, VacancyStatus } from "@/lib/supabase/types";
 
 interface DashboardBrowserProps {
@@ -20,8 +22,7 @@ const VACANCY_FILTERS: { value: VacancyStatus | "all"; label: string }[] = [
 ];
 
 const SELECT_CLASSES =
-  "h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50";
-const LINK_CLASSES = "text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50";
+  "h-10 rounded-lg border border-border bg-surface px-3 text-sm outline-none transition-colors focus:border-accent";
 
 function formatLastScraped(value: string | null): string {
   if (!value) return "Not yet checked";
@@ -85,20 +86,23 @@ export default function DashboardBrowser({ universities, courses, profile }: Das
   return (
     <div className="flex flex-col gap-10">
       {courses.length === 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-          No live vacancies right now — Clearing has closed for the current cycle at every
-          university we track. Hotline numbers and direct links are still shown below.
+        <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            No live vacancies right now — Clearing has closed for the current cycle at every
+            university we track. Hotline numbers and direct links are still shown below.
+          </span>
         </div>
       )}
 
       {profile ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Your top picks</h2>
+          <h2 className="text-sm font-semibold">Your top picks</h2>
 
           {profile.top_3_universities.length === 0 ? (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-muted">
               Add up to 3 target universities on your{" "}
-              <Link href="/profile" className={LINK_CLASSES}>
+              <Link href="/profile" className={linkClasses}>
                 profile
               </Link>{" "}
               to see them ranked here.
@@ -120,30 +124,30 @@ export default function DashboardBrowser({ universities, courses, profile }: Das
           )}
 
           {profile.backup_courses.length > 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <Card>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Your backup notes
               </h3>
-              <ul className="mt-2 flex flex-col gap-1 text-sm text-zinc-700 dark:text-zinc-300">
+              <ul className="mt-2 flex flex-col gap-1 text-sm">
                 {profile.backup_courses.map((note, i) => (
                   <li key={i}>{note}</li>
                 ))}
               </ul>
-            </div>
+            </Card>
           )}
         </section>
       ) : (
-        <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-          <Link href="/login" className={LINK_CLASSES}>
+        <Card className="text-sm text-muted">
+          <Link href="/login" className={linkClasses}>
             Sign in
           </Link>{" "}
           and set up your profile to see personalized picks based on your grades and target unis.
-        </div>
+        </Card>
       )}
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">All universities</h2>
+          <h2 className="text-sm font-semibold">All universities</h2>
           <div className="flex flex-wrap gap-2">
             <select
               value={subjectFilter}
@@ -187,12 +191,15 @@ export default function DashboardBrowser({ universities, courses, profile }: Das
 
 function TopPickCard({ university, matches }: { university: University; matches: MatchResult[] }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+    <Card className="flex flex-col gap-2 border-accent/30">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{university.name}</h3>
+        <h3 className="text-sm font-medium">{university.name}</h3>
         {university.clearing_phone && (
-          <a href={`tel:${toTelHref(university.clearing_phone)}`} className={`shrink-0 ${LINK_CLASSES}`}>
-            Call
+          <a
+            href={`tel:${toTelHref(university.clearing_phone)}`}
+            className={`inline-flex shrink-0 items-center gap-1 ${linkClasses}`}
+          >
+            <Phone className="h-3.5 w-3.5" /> Call
           </a>
         )}
       </div>
@@ -200,23 +207,26 @@ function TopPickCard({ university, matches }: { university: University; matches:
       {matches.length > 0 ? (
         <ul className="flex flex-col gap-1">
           {matches.slice(0, 5).map((m) => (
-            <li key={m.course.id} className="text-sm text-zinc-700 dark:text-zinc-300">
+            <li key={m.course.id} className="text-sm">
               {m.course.name}
-              <span className="text-zinc-500 dark:text-zinc-500"> — {m.course.vacancy_status}</span>
+              <span className="text-muted"> — {m.course.vacancy_status}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-muted">
           Clearing has closed for the current cycle at {university.name} — no live vacancies right
           now.
         </p>
       )}
 
-      <Link href={`/dashboard/${university.id}`} className={`self-start ${LINK_CLASSES}`}>
-        View details &amp; prepare a call script
+      <Link
+        href={`/dashboard/${university.id}`}
+        className={`inline-flex items-center gap-1 self-start ${linkClasses}`}
+      >
+        View details &amp; prepare a call script <ArrowRight className="h-3.5 w-3.5" />
       </Link>
-    </div>
+    </Card>
   );
 }
 
@@ -230,31 +240,25 @@ function UniversityCard({
   const hasLiveData = university.scrape_status === "ok" && courses.length > 0;
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <Card className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{university.name}</h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
+          <h3 className="text-sm font-medium">{university.name}</h3>
+          <p className="text-xs text-muted">
             Checked: {formatLastScraped(university.last_scraped_at)}
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
-            hasLiveData
-              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-          }`}
-        >
+        <Badge tone={hasLiveData ? "success" : "neutral"}>
           {hasLiveData ? "Live vacancy data" : "No live vacancies"}
-        </span>
+        </Badge>
       </div>
 
       {courses.length > 0 ? (
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <p className="text-xs text-muted">
           {courses.length} course{courses.length === 1 ? "" : "s"} matching your filters
         </p>
       ) : (
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <p className="text-xs text-muted">
           Clearing has closed for the current cycle at {university.name} — no live vacancies right
           now.
         </p>
@@ -262,14 +266,20 @@ function UniversityCard({
 
       <div className="flex flex-wrap items-center gap-4 pt-1">
         {university.clearing_phone && (
-          <a href={`tel:${toTelHref(university.clearing_phone)}`} className={LINK_CLASSES}>
-            Call {university.clearing_phone}
+          <a
+            href={`tel:${toTelHref(university.clearing_phone)}`}
+            className={`inline-flex items-center gap-1 ${linkClasses}`}
+          >
+            <Phone className="h-3.5 w-3.5" /> {university.clearing_phone}
           </a>
         )}
-        <Link href={`/dashboard/${university.id}`} className={LINK_CLASSES}>
-          View details &amp; call script
+        <Link
+          href={`/dashboard/${university.id}`}
+          className={`inline-flex items-center gap-1 ${linkClasses}`}
+        >
+          View details &amp; call script <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
-    </div>
+    </Card>
   );
 }

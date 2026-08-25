@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { RefreshCw, X } from "lucide-react";
 import { saveCallScript } from "./actions";
 import { generateCallScript } from "@/lib/callScript";
+import { Card, SectionLabel, buttonClasses, inputClasses, labelClasses, linkClasses } from "@/components/ui";
 import type { CallScript, GradeEntry, Profile, UcasStatus } from "@/lib/supabase/types";
 
 const UCAS_STATUS_OPTIONS: { value: UcasStatus; label: string }[] = [
@@ -13,10 +15,6 @@ const UCAS_STATUS_OPTIONS: { value: UcasStatus; label: string }[] = [
   { value: "self_releasing", label: "Self-releasing (changed my mind)" },
   { value: "waiting", label: "Waiting to hear back" },
 ];
-
-const INPUT_CLASSES =
-  "h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-50";
-const LINK_CLASSES = "text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50";
 
 interface CallScriptPanelProps {
   universityId: string;
@@ -77,61 +75,55 @@ export default function CallScriptPanel({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+    <Card as="section" className="flex flex-col gap-4">
       <div>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Call script</h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-500">
+        <h2 className="text-sm font-semibold">Call script</h2>
+        <p className="text-xs text-muted">
           Ready to read out when you call. Edit anything, then regenerate or save.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Your name</label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClasses}>Your name</label>
           <input
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
             placeholder="Optional"
-            className={INPUT_CLASSES}
+            className={inputClasses}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Course you&apos;re calling about
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClasses}>Course you&apos;re calling about</label>
           <input
             value={courseName}
             onChange={(e) => setCourseName(e.target.value)}
-            className={INPUT_CLASSES}
+            className={inputClasses}
           />
         </div>
-        <div className="flex flex-col gap-1 sm:col-span-2">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Why this university (optional)
-          </label>
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <label className={labelClasses}>Why this university (optional)</label>
           <input
             value={whyThisUni}
             onChange={(e) => setWhyThisUni(e.target.value)}
             placeholder="e.g. their labs are excellent"
-            className={INPUT_CLASSES}
+            className={inputClasses}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Backup course to ask about (optional)
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClasses}>Backup course to ask about (optional)</label>
           <input
             value={backupCourseName}
             onChange={(e) => setBackupCourseName(e.target.value)}
-            className={INPUT_CLASSES}
+            className={inputClasses}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">UCAS status</label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClasses}>UCAS status</label>
           <select
             value={ucasStatus}
             onChange={(e) => setUcasStatus(e.target.value as UcasStatus)}
-            className={INPUT_CLASSES}
+            className={inputClasses}
           >
             {UCAS_STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -142,8 +134,8 @@ export default function CallScriptPanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Your grades</label>
+      <div className="flex flex-col gap-1.5">
+        <SectionLabel>Your grades</SectionLabel>
         <div className="flex flex-col gap-2">
           {grades.map((g, i) => (
             <div key={i} className="flex gap-2">
@@ -151,21 +143,21 @@ export default function CallScriptPanel({
                 placeholder="Subject"
                 value={g.subject}
                 onChange={(e) => updateGrade(i, "subject", e.target.value)}
-                className={`flex-1 ${INPUT_CLASSES}`}
+                className={`flex-1 ${inputClasses}`}
               />
               <input
                 placeholder="Grade"
                 value={g.grade}
                 onChange={(e) => updateGrade(i, "grade", e.target.value)}
-                className={`w-20 ${INPUT_CLASSES}`}
+                className={`w-20 ${inputClasses}`}
               />
               <button
                 type="button"
                 onClick={() => setGrades((prev) => prev.filter((_, idx) => idx !== i))}
                 aria-label="Remove grade"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-red-300 hover:text-red-600 dark:hover:border-red-900 dark:hover:text-red-400"
               >
-                &times;
+                <X className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -173,27 +165,27 @@ export default function CallScriptPanel({
         <button
           type="button"
           onClick={() => setGrades((prev) => [...prev, { subject: "", grade: "" }])}
-          className="self-start text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
+          className="self-start text-sm font-medium text-accent hover:text-accent-hover"
         >
           + Add grade
         </button>
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Script</label>
+        <SectionLabel>Script</SectionLabel>
         <button
           type="button"
           onClick={regenerate}
-          className="text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover"
         >
-          Regenerate
+          <RefreshCw className="h-3.5 w-3.5" /> Regenerate
         </button>
       </div>
       <textarea
         value={scriptText}
         onChange={(e) => setScriptText(e.target.value)}
         rows={8}
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+        className={`${inputClasses} h-auto resize-y py-2.5 leading-relaxed`}
       />
 
       {isSignedIn ? (
@@ -214,19 +206,19 @@ export default function CallScriptPanel({
           <button
             type="submit"
             disabled={pending || !scriptText.trim()}
-            className="flex h-11 w-full items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-medium text-zinc-50 transition-colors hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className={buttonClasses("primary", "w-full")}
           >
             {pending ? "Saving…" : "Save script"}
           </button>
         </form>
       ) : (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          <Link href="/login" className={LINK_CLASSES}>
+        <p className="text-sm text-muted">
+          <Link href="/login" className={linkClasses}>
             Sign in
           </Link>{" "}
           to save this script for next time.
         </p>
       )}
-    </section>
+    </Card>
   );
 }

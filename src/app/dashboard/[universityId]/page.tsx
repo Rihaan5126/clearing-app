@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ExternalLink, Info, Phone } from "lucide-react";
 import { getOptionalSession } from "@/lib/supabase/dal";
 import { createClient } from "@/lib/supabase/server";
 import { rankCourses } from "@/lib/matching";
 import { toTelHref } from "@/lib/tel";
 import CallScriptPanel from "./CallScriptPanel";
+import { Badge, Card, linkClasses } from "@/components/ui";
 import type { CallScript, Course, Profile, University } from "@/lib/supabase/types";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const LINK_CLASSES = "text-sm font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50";
 
 function formatLastScraped(value: string | null): string {
   if (!value) return "Not yet checked";
@@ -65,73 +66,79 @@ export default async function UniversityDetailPage({
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 px-6 py-12 dark:bg-black">
-      <main className="mx-auto flex w-full max-w-2xl flex-col gap-8">
-        <Link href="/dashboard" className={LINK_CLASSES}>
-          &larr; All universities
+    <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-12">
+      <main className="flex flex-col gap-8">
+        <Link href="/dashboard" className={`inline-flex items-center gap-1 self-start ${linkClasses}`}>
+          <ArrowLeft className="h-3.5 w-3.5" /> All universities
         </Link>
 
         <header className="flex flex-col gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {uni.name}
-          </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            Checked: {formatLastScraped(uni.last_scraped_at)}
-          </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{uni.name}</h1>
+            <Badge tone={uni.scrape_status === "ok" && courseList.length > 0 ? "success" : "neutral"}>
+              {uni.scrape_status === "ok" && courseList.length > 0
+                ? "Live vacancy data"
+                : "No live vacancies"}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted">Checked: {formatLastScraped(uni.last_scraped_at)}</p>
+          <div className="flex flex-wrap gap-5">
             {uni.clearing_phone ? (
-              <a href={`tel:${toTelHref(uni.clearing_phone)}`} className={LINK_CLASSES}>
-                Call {uni.clearing_phone}
+              <a
+                href={`tel:${toTelHref(uni.clearing_phone)}`}
+                className={`inline-flex items-center gap-1.5 ${linkClasses}`}
+              >
+                <Phone className="h-3.5 w-3.5" /> {uni.clearing_phone}
               </a>
             ) : (
-              <span className="text-sm text-zinc-500 dark:text-zinc-500">
-                No hotline number on record
-              </span>
+              <span className="text-sm text-muted">No hotline number on record</span>
             )}
             {uni.website_url && (
-              <a href={uni.website_url} target="_blank" rel="noreferrer" className={LINK_CLASSES}>
-                Visit their Clearing page
+              <a
+                href={uni.website_url}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex items-center gap-1.5 ${linkClasses}`}
+              >
+                Visit their Clearing page <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
           </div>
         </header>
 
         {courseList.length === 0 ? (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-            Clearing has closed for the current cycle at {uni.name} — there&apos;s no live vacancy
-            data right now. Call the hotline above or use their own Clearing search tool directly.
+          <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Clearing has closed for the current cycle at {uni.name} — there&apos;s no live
+              vacancy data right now. Call the hotline above or use their own Clearing search tool
+              directly.
+            </span>
           </div>
         ) : (
           <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Courses</h2>
+            <h2 className="text-sm font-semibold">Courses</h2>
             <ul className="flex flex-col gap-2">
               {rankedCourses.map((r) => (
-                <li
-                  key={r.course.id}
-                  className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900"
-                >
+                <Card as="li" key={r.course.id} className="flex flex-col gap-1">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                      {r.course.name}
-                    </span>
-                    <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-500">
-                      {r.course.vacancy_status}
-                    </span>
+                    <span className="text-sm font-medium">{r.course.name}</span>
+                    <span className="shrink-0 text-xs text-muted">{r.course.vacancy_status}</span>
                   </div>
                   {r.course.subject_area && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-500">{r.course.subject_area}</p>
+                    <p className="text-xs text-muted">{r.course.subject_area}</p>
                   )}
                   {r.course.entry_requirements && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                    <p className="text-xs text-muted">
                       Entry requirements: {r.course.entry_requirements}
                     </p>
                   )}
                   {profile && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                    <p className="text-xs text-muted">
                       Grade match: {r.gradeMatch.replace("_", " ")}
                     </p>
                   )}
-                </li>
+                </Card>
               ))}
             </ul>
           </section>
