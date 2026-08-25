@@ -92,3 +92,11 @@ npm run build
 - RLS on `profiles` and `call_scripts` scopes every policy to
   `auth.uid() = user_id`, with both `USING` and `WITH CHECK` on updates so a
   row's ownership can't be reassigned.
+
+## Image credits
+
+- `public/campus/durham-castle.jpg` — Durham Castle, part of Durham
+  University's campus, by [Christophe Meneboeuf](https://commons.wikimedia.org/wiki/User:Kimdime),
+  [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), via
+  [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Durham_Castle_from_the_courtyard.jpg).
+  Resized and re-compressed from the original for use as a page background.
