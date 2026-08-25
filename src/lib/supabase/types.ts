@@ -41,3 +41,14 @@ export interface Profile {
   backup_courses: string[];
   ucas_status: UcasStatus;
 }
+
+export interface CallScript {
+  id: string;
+  user_id: string;
+  university_id: string;
+  course_id: string | null;
+  course_name: string | null;
+  script_text: string;
+  created_at: string;
+  updated_at: string;
+}
